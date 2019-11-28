@@ -1,0 +1,5 @@
+{ "entries": ["query1", "query2"]
+, "positiveTittle": "helpfull"
+, "negativeTittle": "useless"
+, "description": "Can skill help user?"
+}
