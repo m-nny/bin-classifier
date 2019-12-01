@@ -10,9 +10,9 @@ type alias Entry =
 
 
 type alias Mark =
-    Bool
+    Maybe Bool
 
 
 newEntry : String -> Int -> Entry
 newEntry query id =
-    Entry query id False
+    Entry query id Nothing

@@ -50,12 +50,17 @@ type MarkType
 
 
 markAlphaValue : MarkType -> Mark -> ( Float, String )
-markAlphaValue markType isPositive =
-    ( if (markType == Positive && isPositive) || (markType == Negative && not isPositive) then
-        1.0
+markAlphaValue markType mark =
+    ( case mark of
+        Nothing ->
+            0.3
 
-      else
-        0.3
+        Just isPositive ->
+            if (markType == Positive && isPositive) || (markType == Negative && not isPositive) then
+                1.0
+
+            else
+                0.3
     , if markType == Positive then
         "👍"
 

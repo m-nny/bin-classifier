@@ -76,7 +76,7 @@ entryView entry =
             , width (shrink |> minimum 400)
             ]
         )
-        [ markView Negative entry.mark (UpdateEntry entry.id False)
+        [ markView Negative entry.mark (UpdateEntry entry.id (Just False))
         , centeredText entry.query
-        , markView Positive entry.mark (UpdateEntry entry.id True)
+        , markView Positive entry.mark (UpdateEntry entry.id (Just True))
         ]
