@@ -9,8 +9,8 @@ import Element.Font as Font
 import Element.Input exposing (button)
 
 
-rootAttributes : List (Attribute msg)
-rootAttributes =
+rootAttributes : Element msg -> List (Attribute msg)
+rootAttributes lefter =
     [ width (fill |> maximum 600)
     , height fill
     , centerX
@@ -25,6 +25,7 @@ rootAttributes =
         ]
     , Font.light
     , Font.size (size Normal)
+    , onLeft lefter
     ]
 
 

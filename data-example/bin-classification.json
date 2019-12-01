@@ -1,5 +1,8 @@
-{ "entries": ["query1", "query2"]
-, "positiveTittle": "helpfull"
-, "negativeTittle": "useless"
-, "description": "Can skill help user?"
+{
+    "entries": [
+        {"query":"m-nny@"},
+        {"query":"m-nny@yandex.ru"},
+        {"query":"@m-nny"}
+    ],
+    "title": "Is it email?"
 }

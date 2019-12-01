@@ -6,37 +6,46 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
+import Element.Input exposing (button)
+import File exposing (File)
+import File.Select as Select
 import Html exposing (Html)
 import Lego exposing (..)
+import Task
 
 
 main =
-    Browser.sandbox
+    Browser.element
         { init = init
         , update = update
         , view = view
+        , subscriptions = subscriptions
         }
 
 
 type alias Model =
-    Dataset
+    { dataset : Dataset, rawDataset : String }
 
 
-init : Dataset
-init =
-    [ newEntry "m-nny@" 0, newEntry "m-nny@yandex.ru" 1 ]
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( Model emptyDataset "", Cmd.none )
 
 
 type Msg
     = NoOp
     | UpdateEntry Int Mark
+    | UpdateDataset Dataset
+    | DatasetRequested
+    | DatasetSelected File
+    | DatasetLoaded String
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         NoOp ->
-            model
+            ( model, Cmd.none )
 
         UpdateEntry id newMark ->
             let
@@ -46,15 +55,47 @@ update msg model =
 
                     else
                         t
+
+                dataset =
+                    model.dataset
             in
-            List.map updateEntry model
+            ( { model | dataset = { dataset | entries = List.map updateEntry dataset.entries } }, Cmd.none )
+
+        UpdateDataset newDataset ->
+            ( { model | dataset = newDataset }, Cmd.none )
+
+        DatasetRequested ->
+            ( model, Select.file [ "text/json" ] DatasetSelected )
+
+        DatasetSelected file ->
+            ( model, Task.perform DatasetLoaded (File.toString file) )
+
+        DatasetLoaded rawDataset ->
+            let
+                newDataset =
+                    Result.withDefault emptyDataset (decodeDataset rawDataset)
+            in
+            ( { model | rawDataset = rawDataset, dataset = newDataset }, Cmd.none )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
 
 
 view : Model -> Html Msg
 view model =
     Element.layout
         [ Background.color (rgb255 255 249 249) ]
-        (column rootAttributes [ titleView "Is String email?", dataView model ])
+        (column (rootAttributes <| rawView model) [ titleView model.dataset.title, dataView model.dataset.entries ])
+
+
+rawView : Model -> Element Msg
+rawView model =
+    column (card [])
+        [ button (card []) { label = centeredText "load", onPress = Just DatasetRequested }
+        , centeredText model.rawDataset
+        ]
 
 
 titleView : String -> Element Msg
