@@ -1,107 +1,87 @@
-module Classifier exposing (Model, Msg, init, subscriptions, update, view)
+module Classifier exposing (..)
 
 import Browser
-import Data exposing (..)
 import Element exposing (..)
-import Element.Input exposing (button)
-import Utils
+import Element.Background as Background
+import Element.Border as Border
+import Element.Font as Font
 
 
 main =
-    Browser.element
-        { init = init
-        , view = \model -> Element.layout [] (view model)
-        , update = update
-        , subscriptions = subscriptions
-        }
+    Element.layout
+        [ Background.color (rgb255 255 249 249)
+        ]
+        view
 
 
-type alias Model =
-    { dataset : Dataset }
-
-
-type Msg
-    = UpdateDataset Dataset
-    | UpdateMark Int Bool
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        UpdateDataset newDataset ->
-            ( { model | dataset = newDataset }, Cmd.none )
-
-        UpdateMark index value ->
-            ( { model | dataset = datasetMarkEntry index value model.dataset }, Cmd.none )
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
-
-
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( Model (Dataset "title" [ "гороскоп", "рецепты" ] [ Nothing, Nothing ]), Cmd.none )
-
-
-view : Model -> Element Msg
-view model =
-    Element.column [ spacing 16, padding 16, centerX, width (fill |> maximum 400) ]
-        [ el [ centerX ] (text model.dataset.description)
-        , datasetView model.dataset
+view : Element msg
+view =
+    column
+        [ width (fill |> maximum 600)
+        , height fill
+        , centerX
+        , spacing (size Normal)
+        , padding (size Normal)
+        ]
+        [ el (card [ height <| px 80 ]) (centeredText "Is String email?")
+        , dataView
         ]
 
 
-datasetView : Dataset -> Element Msg
-datasetView dataset =
-    let
-        data =
-            List.map2 Tuple.pair dataset.entries dataset.marks
-    in
-    Element.indexedTable [ spacing 8 ]
-        { data = data
-        , columns =
-            [ { header = text "query", width = fill, view = entryView Query }
-            , { header = text "mark", width = fill, view = entryView Mark }
-            , { header = Element.none, width = fill, view = entryView MakeNegative }
-            , { header = Element.none, width = fill, view = entryView MakePositive }
+dataView : Element msg
+dataView =
+    column (card [ spacing (size Small), padding (size Small), height fill, Background.color (rgb255 238 226 223) ])
+        [ entryView "m-nny@"
+        , entryView "m-nny@yandex.ru"
+        ]
+
+
+entryView : String -> Element msg
+entryView query =
+    el
+        (card
+            [ height <| px 60
+            , width (shrink |> minimum 400)
+            , paddingXY (size Small) 0
             ]
-        }
+        )
+        (centeredText query)
 
 
-type FieldName
-    = Query
-    | Mark
-    | MakePositive
-    | MakeNegative
+card : List (Attribute msg) -> List (Attribute msg)
+card =
+    List.append
+        [ centerX
+        , width fill
+        , Border.shadow { blur = 4, color = rgba 0 0 0 0.25, offset = ( 0, 4 ), size = 0 }
+        , Background.color (rgb255 255 255 255)
+        , Border.rounded 10
+        ]
 
 
-entryView : FieldName -> Int -> ( String, Maybe Bool ) -> Element Msg
-entryView field index ( query, mark ) =
-    case field of
-        Query ->
-            text query
-
-        Mark ->
-            text (markToString mark)
-
-        MakePositive ->
-            button [] { onPress = Just (UpdateMark index True), label = text "positive" }
-
-        MakeNegative ->
-            button [] { onPress = Just (UpdateMark index False), label = text "negative" }
+centeredText : String -> Element msg
+centeredText t =
+    el [ centerX, centerY ] (text t)
 
 
-markToString : Maybe Bool -> String
-markToString mark =
-    case mark of
-        Nothing ->
-            "??"
+type Size
+    = None
+    | Small
+    | Normal
+    | Large
 
-        Just value ->
-            if value then
-                "+"
 
-            else
-                "-"
+size : Size -> Int
+size s =
+    case s of
+        None ->
+            0
+
+        Small ->
+            8
+
+        Normal ->
+            16
+
+        Large ->
+            32
