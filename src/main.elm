@@ -2,16 +2,15 @@ module Classifier exposing (Model, Msg, init, subscriptions, update, view)
 
 import Browser
 import Data exposing (..)
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Element exposing (Element, el, padding, spacing, text)
+import Element.Input exposing (button)
 import Utils
 
 
 main =
     Browser.element
         { init = init
-        , view = view
+        , view = \model -> Element.layout [] (view model)
         , update = update
         , subscriptions = subscriptions
         }
@@ -46,29 +45,27 @@ init _ =
     ( Model (Dataset "title" [ "гороскоп", "рецепты" ] [ Nothing, Nothing ]), Cmd.none )
 
 
-view : Model -> Html Msg
+view : Model -> Element Msg
 view model =
-    div [ class "root" ]
-        [ div [ class "title" ]
-            [ div [] [ text model.dataset.description ]
-            ]
+    Element.column [ spacing 16, padding 16 ]
+        [ el [] (text model.dataset.description)
         , datasetView model.dataset
         ]
 
 
-datasetView : Dataset -> Html Msg
+datasetView : Dataset -> Element Msg
 datasetView dataset =
-    div [ class "dataset" ]
+    Element.column [ spacing 4 ]
         (List.indexedMap entryView (List.map2 Tuple.pair dataset.entries dataset.marks))
 
 
-entryView : Int -> (String, Maybe Bool) -> Html Msg
-entryView index (query, mark) =
-    div [ class "dataset__entry" ]
+entryView : Int -> ( String, Maybe Bool ) -> Element Msg
+entryView index ( query, mark ) =
+    Element.row [ spacing 8 ]
         [ text query
         , text (markToString mark)
-        , button [ onClick (UpdateMark index True) ] [ text "positive" ]
-        , button [ onClick (UpdateMark index False) ] [ text "negative" ]
+        , button [] { onPress = Just (UpdateMark index True), label = text "positive" }
+        , button [] { onPress = Just (UpdateMark index False), label = text "negative" }
         ]
 
 
