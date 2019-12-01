@@ -1,87 +1,82 @@
 module Classifier exposing (..)
 
 import Browser
+import Data exposing (..)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
+import Html exposing (Html)
+import Lego exposing (..)
 
 
 main =
+    Browser.sandbox
+        { init = init
+        , update = update
+        , view = view
+        }
+
+
+type alias Model =
+    Dataset
+
+
+init : Dataset
+init =
+    [ newEntry "m-nny@" 0, newEntry "m-nny@yandex.ru" 1 ]
+
+
+type Msg
+    = NoOp
+    | UpdateEntry Int Mark
+
+
+update : Msg -> Model -> Model
+update msg model =
+    case msg of
+        NoOp ->
+            model
+
+        UpdateEntry id newMark ->
+            let
+                updateEntry t =
+                    if t.id == id then
+                        { t | mark = newMark }
+
+                    else
+                        t
+            in
+            List.map updateEntry model
+
+
+view : Model -> Html Msg
+view model =
     Element.layout
-        [ Background.color (rgb255 255 249 249)
-        ]
-        view
+        [ Background.color (rgb255 255 249 249) ]
+        (column rootAttributes [ titleView "Is String email?", dataView model ])
 
 
-view : Element msg
-view =
-    column
-        [ width (fill |> maximum 600)
-        , height fill
-        , centerX
-        , spacing (size Normal)
-        , padding (size Normal)
-        ]
-        [ el (card [ height <| px 80 ]) (centeredText "Is String email?")
-        , dataView
-        ]
+titleView : String -> Element Msg
+titleView title =
+    el (card [ height <| px 80, Font.italic, Font.size (size Large) ]) (centeredText title)
 
 
-dataView : Element msg
-dataView =
+dataView : List Entry -> Element Msg
+dataView entries =
     column (card [ spacing (size Small), padding (size Small), height fill, Background.color (rgb255 238 226 223) ])
-        [ entryView "m-nny@"
-        , entryView "m-nny@yandex.ru"
-        ]
+        (List.map entryView entries)
 
 
-entryView : String -> Element msg
-entryView query =
-    el
+entryView : Entry -> Element Msg
+entryView entry =
+    row
         (card
             [ height <| px 60
             , width (shrink |> minimum 400)
-            , paddingXY (size Small) 0
             ]
         )
-        (centeredText query)
-
-
-card : List (Attribute msg) -> List (Attribute msg)
-card =
-    List.append
-        [ centerX
-        , width fill
-        , Border.shadow { blur = 4, color = rgba 0 0 0 0.25, offset = ( 0, 4 ), size = 0 }
-        , Background.color (rgb255 255 255 255)
-        , Border.rounded 10
+        [ markView Negative entry.mark (UpdateEntry entry.id False)
+        , centeredText entry.query
+        , markView Positive entry.mark (UpdateEntry entry.id True)
         ]
-
-
-centeredText : String -> Element msg
-centeredText t =
-    el [ centerX, centerY ] (text t)
-
-
-type Size
-    = None
-    | Small
-    | Normal
-    | Large
-
-
-size : Size -> Int
-size s =
-    case s of
-        None ->
-            0
-
-        Small ->
-            8
-
-        Normal ->
-            16
-
-        Large ->
-            32
