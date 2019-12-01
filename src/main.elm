@@ -2,7 +2,7 @@ module Classifier exposing (Model, Msg, init, subscriptions, update, view)
 
 import Browser
 import Data exposing (..)
-import Element exposing (Element, el, padding, spacing, text)
+import Element exposing (..)
 import Element.Input exposing (button)
 import Utils
 
@@ -47,26 +47,50 @@ init _ =
 
 view : Model -> Element Msg
 view model =
-    Element.column [ spacing 16, padding 16 ]
-        [ el [] (text model.dataset.description)
+    Element.column [ spacing 16, padding 16, centerX, width (fill |> maximum 400) ]
+        [ el [ centerX ] (text model.dataset.description)
         , datasetView model.dataset
         ]
 
 
 datasetView : Dataset -> Element Msg
 datasetView dataset =
-    Element.column [ spacing 4 ]
-        (List.indexedMap entryView (List.map2 Tuple.pair dataset.entries dataset.marks))
+    let
+        data =
+            List.map2 Tuple.pair dataset.entries dataset.marks
+    in
+    Element.indexedTable [ spacing 8 ]
+        { data = data
+        , columns =
+            [ { header = text "query", width = fill, view = entryView Query }
+            , { header = text "mark", width = fill, view = entryView Mark }
+            , { header = Element.none, width = fill, view = entryView MakeNegative }
+            , { header = Element.none, width = fill, view = entryView MakePositive }
+            ]
+        }
 
 
-entryView : Int -> ( String, Maybe Bool ) -> Element Msg
-entryView index ( query, mark ) =
-    Element.row [ spacing 8 ]
-        [ text query
-        , text (markToString mark)
-        , button [] { onPress = Just (UpdateMark index True), label = text "positive" }
-        , button [] { onPress = Just (UpdateMark index False), label = text "negative" }
-        ]
+type FieldName
+    = Query
+    | Mark
+    | MakePositive
+    | MakeNegative
+
+
+entryView : FieldName -> Int -> ( String, Maybe Bool ) -> Element Msg
+entryView field index ( query, mark ) =
+    case field of
+        Query ->
+            text query
+
+        Mark ->
+            text (markToString mark)
+
+        MakePositive ->
+            button [] { onPress = Just (UpdateMark index True), label = text "positive" }
+
+        MakeNegative ->
+            button [] { onPress = Just (UpdateMark index False), label = text "negative" }
 
 
 markToString : Maybe Bool -> String
